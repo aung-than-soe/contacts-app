@@ -1,0 +1,22 @@
+{
+  "contacts": [
+    {
+      "id": "1",
+      "name": "John Smith",
+      "email": "john.smith@gmail.com",
+      "phone": "+95 9 1234 5678"
+    },
+    {
+      "id": "2",
+      "name": "Maria Johnson",
+      "email": "maria.johnson@gmail.com",
+      "phone": "+95 9 5678 1234"
+    },
+    {
+      "id": "3",
+      "name": "William Smith",
+      "email": "willian.smith@gmail.com",
+      "phone": "+95 9 2244 1357"
+    }
+  ]
+}
