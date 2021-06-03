@@ -1,2 +1,0 @@
-# contacts-app
-For practice
