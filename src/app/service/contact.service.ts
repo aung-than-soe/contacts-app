@@ -30,13 +30,21 @@ export class ContactService {
   }
 
   /**
-   * Send HTTP request to create new contact
+   * Send HTTP request to create or update contact
    * @param {Contact} contact required
    * @return {*} {Observable<Contact>}
    * @memberof ContactService
    */
-  createContact(contact: Contact): Observable<Contact> {
+  createOrUpdateContact(contact: Contact): Observable<Contact> {
     return this.httpClient.post<Contact>(`${environment.BASE_URL}/contacts`, contact);
+  }
+
+  getContactById(id: string): Observable<Contact> {
+    return this.httpClient.get<Contact>(`${environment.BASE_URL}/contacts/${id}`);
+  }
+
+  deleteContactById(id: string) {
+    return this.httpClient.delete<any>(`${environment.BASE_URL}/contacts/${id}`);
   }
 
 }

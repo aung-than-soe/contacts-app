@@ -1,9 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ContactService } from '../service/contact.service';
-
+import { filter, pluck, switchMap } from "rxjs/operators";
 /**
  * @export
  * @class EditContactComponent
@@ -27,11 +27,15 @@ export class EditContactComponent implements OnInit, OnDestroy {
    * @param {ContactService} contactService
    * @memberof EditContactComponent
    */
-  constructor(private formBuilder: FormBuilder, private router: Router, private contactService: ContactService) { }
+  constructor(
+    private formBuilder: FormBuilder,
+    private router: Router,
+    private contactService: ContactService,
+    private route: ActivatedRoute) { }
 
    /**
    * Initialize contact form and added requried validators
-   * Name Validator(only allow for characters, numbers and no special characters except underscore '_' )
+   * Name Validator(only allow for characters, numbers and space )
    * Email Validator(default email validator from angular forms)
    * Phone number Validator(only allow for numbers starting with +95)
    * @memberof EditContactComponent
@@ -39,9 +43,20 @@ export class EditContactComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // initialize contact form including Validators
     this.contactForm = this.formBuilder.group({
-      name: new FormControl('', Validators.compose([Validators.required, Validators.pattern('[a-zA-Z_][0-9a-zA-Z_]*')])),
+      id: new FormControl(''),
+      name: new FormControl('', Validators.compose([Validators.required, Validators.pattern('[a-zA-Z ][0-9a-zA-Z ]*')])),
       email: new FormControl('', [Validators.required, Validators.email]),
       phone: new FormControl('', Validators.compose([Validators.required, Validators.pattern('^(\\+95-?)|0-?[0-9]$')]))
+    });
+
+    this.route.params.pipe(
+      pluck('id'),
+      filter(id => id && id != '0'),
+      switchMap(id => this.contactService.getContactById(id))
+      ).subscribe(({name, email, phone}) => {
+      this.formControls.name.setValue(name);
+      this.formControls.email.setValue(email);
+      this.formControls.phone.setValue(phone);
     })
   }
 
@@ -63,7 +78,7 @@ export class EditContactComponent implements OnInit, OnDestroy {
   onSubmit() {
     this.submitted = true;
     if (this.contactForm.valid) {
-      this.contactSubscription = this.contactService.createContact(this.contactForm.value).subscribe(console.log);
+      this.contactSubscription = this.contactService.createOrUpdateContact(this.contactForm.value).subscribe(console.log);
       this.submitted = false;
       this.router.navigateByUrl('./contacts');
     }
