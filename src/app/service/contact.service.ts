@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { shareReplay } from 'rxjs/operators';
 
 /**
  * @export
@@ -26,9 +27,12 @@ export class ContactService {
    * @memberof ContactService
    */
   getAllContacts(): Observable<Contact[]> {
-    return this.httpClient.get<Contact[]>(`${environment.BASE_URL}/contacts`)
+    return this.retrieveAllContacts();
   }
 
+  private retrieveAllContacts() {
+    return this.httpClient.get<Contact[]>(`${environment.BASE_URL}/contacts`).pipe(shareReplay());
+  }
   /**
    * Send HTTP request to create or update contact
    * @param {Contact} contact required
@@ -36,6 +40,9 @@ export class ContactService {
    * @memberof ContactService
    */
   createOrUpdateContact(contact: Contact): Observable<Contact> {
+    if(contact.id && contact.id != '0') {
+      return this.httpClient.put<Contact>(`${environment.BASE_URL}/contacts/${contact.id}`, contact);
+    }
     return this.httpClient.post<Contact>(`${environment.BASE_URL}/contacts`, contact);
   }
 

@@ -21,6 +21,7 @@ export class ContactListComponent implements OnInit, OnDestroy {
   idToDelete!: string;
 
   subscriptions: Subscription[] = [];
+  toastKlassRef: string = '.toast';
 
   constructor(private contactService: ContactService) {
   }
@@ -30,6 +31,11 @@ export class ContactListComponent implements OnInit, OnDestroy {
    * @memberof ContactListComponent
    */
   ngOnInit(): void {
+    $(this.toastKlassRef).toast({
+      autohide: true,
+      animation: true,
+      delay: 3 * 1000
+    });
     this.retrieveAllContacts();
 
   }
@@ -59,6 +65,7 @@ export class ContactListComponent implements OnInit, OnDestroy {
     const deleteSub = this.contactService.deleteContactById(this.idToDelete).subscribe(_ => {
       this.retrieveAllContacts();
       $('#confirmModal').modal('hide');
+      $(this.toastKlassRef).toast('show');
       this.subscriptions.push(deleteSub);
     });
   }
