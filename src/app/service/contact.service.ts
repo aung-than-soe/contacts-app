@@ -39,10 +39,20 @@ export class ContactService {
     return this.httpClient.post<Contact>(`${environment.BASE_URL}/contacts`, contact);
   }
 
+  /**
+   *
+   * @param id required to retrieve a contact
+   * @returns {Observable<Contact>}
+   */
   getContactById(id: string): Observable<Contact> {
     return this.httpClient.get<Contact>(`${environment.BASE_URL}/contacts/${id}`);
   }
 
+  /**
+   *
+   * @param id required to delete a contact
+   * @returns {Observable<any>}
+   */
   deleteContactById(id: string) {
     return this.httpClient.delete<any>(`${environment.BASE_URL}/contacts/${id}`);
   }
