@@ -1,5 +1,6 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Observable, Subscription } from 'rxjs';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { fromEvent, Observable, Subscription } from 'rxjs';
+import { filter, map, tap } from 'rxjs/operators';
 import { Contact } from '../models/contact.mode';
 import { ContactService } from '../service/contact.service';
 declare var $: any;
@@ -14,14 +15,16 @@ declare var $: any;
   templateUrl: './contact-list.component.html',
   styleUrls: ['./contact-list.component.scss']
 })
-export class ContactListComponent implements OnInit, OnDestroy {
+export class ContactListComponent implements OnInit, AfterViewInit, OnDestroy {
 
+  @ViewChild("searchInput") searchInput!: ElementRef;
   contacts$!: Observable<Contact[]>;
   contacts: Contact[] = [];
   idToDelete!: string;
-
   subscriptions: Subscription[] = [];
   toastKlassRef: string = '.toast';
+  noContact: boolean = false;
+  searching: boolean = false;
 
   constructor(private contactService: ContactService) {
   }
@@ -37,7 +40,26 @@ export class ContactListComponent implements OnInit, OnDestroy {
       delay: 3 * 1000
     });
     this.retrieveAllContacts();
+  }
 
+  /**
+   * searching implementation after view has been initialized
+   */
+  ngAfterViewInit(): void {
+    const sub = fromEvent(this.searchInput.nativeElement as HTMLInputElement, 'keyup').pipe(
+      map((event: any) => event.target.value),
+      tap(val => {
+        if(!val) {
+          this.searching = false;
+          this.retrieveAllContacts()
+        }
+      }),
+      filter(val => val && val.trim())
+    ).subscribe(val => {
+      this.searching = !!val;
+      this.contacts = this.contacts.filter(({name, phone, email}) => name.includes(val) || email.includes(val) || phone.includes(val));
+      this.subscriptions.push(sub);
+    })
   }
 
   /**
@@ -46,6 +68,9 @@ export class ContactListComponent implements OnInit, OnDestroy {
   private retrieveAllContacts(): void {
     const sub = this.contactService.getAllContacts().subscribe(contacts => {
       this.contacts = [...contacts];
+      if(this.contacts && this.contacts.length == 0) {
+        this.noContact = true;
+      }
       this.subscriptions.push(sub);
     })
   }
